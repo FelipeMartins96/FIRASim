@@ -17,6 +17,7 @@ Copyright (C) 2011, Parsian Robotic Center (eew.aut.ac.ir/~parsian/grsim)
 */
 
 #include "pworld.h"
+#include <iostream>
 PSurface::PSurface()
 {
   callback = NULL;
@@ -39,8 +40,8 @@ void nearCallback (void *data, dGeomID o1, dGeomID o2)
 PWorld::PWorld(dReal dt,dReal gravity,CGraphics* graphics, int _robot_count)
 {
     robot_count = _robot_count;
-    //dInitODE2(0);
-    dInitODE();
+    dInitODE2(0);
+    dAllocateODEDataForThread(dAllocateMaskAll);
     world = dWorldCreate();
     space = dHashSpaceCreate (0);
     contactgroup = dJointGroupCreate (0);
@@ -138,9 +139,12 @@ void PWorld::initAllObjects()
     }
     if (flag)
     {
-        for (int i=0;i<surfaces.count();i++)
+        std::cout << "aquiiiiiiiiiiiiiiii" << std::endl;
+        for (int i=0;i<surfaces.count();i++){
+            std::cout << "aquiiiiiiiiiiiiiiii2222222222" << std::endl;
             sur_matrix[(*(int*)(dGeomGetData(surfaces[i]->id1)))][*((int*)(dGeomGetData(surfaces[i]->id2)))] =
             sur_matrix[(*(int*)(dGeomGetData(surfaces[i]->id2)))][*((int*)(dGeomGetData(surfaces[i]->id1)))] = i;
+        }
     }
 }
 
@@ -155,13 +159,13 @@ PSurface* PWorld::createSurface(PObject* o1,PObject* o2)
     return s;
 }
 
-PSurface* PWorld::createSurfaceBallChassis(PObject* o1,PObject* o2)
+PSurface* PWorld::createOneWaySurface(PObject* o1,PObject* o2)
 {
     PSurface *s = new PSurface();
     s->id1 = o1->geom;
     s->id2 = o2->geom;
     surfaces.append(s);
-    sur_matrix[o2->id][o1->id] = surfaces.count() - 1;
+    sur_matrix[o1->id][o2->id] = surfaces.count() - 1;
     return s;
 }
 

@@ -44,8 +44,6 @@ public:
     ConfigWidget* cfg;
     dSpaceID space;
     PCylinder* chassis;
-    PBall* dummy;
-    dJointID dummy_to_chassis;
     PBox* boxes[3]{};
     bool on;
     //these values are not controled by this class

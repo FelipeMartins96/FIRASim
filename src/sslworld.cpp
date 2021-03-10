@@ -92,7 +92,7 @@ bool rayCallback(dGeomID o1,dGeomID o2,PSurface* s, int robots_count)
     else obj = o1;
     for (int i=0;i<robots_count * 2;i++)
     {
-        if (_w->robots[i]->chassis->geom==obj || _w->robots[i]->dummy->geom==obj)
+        if (_w->robots[i]->chassis->geom==obj || _w->robots[i]->chassis->geom==obj)
         {
             _w->robots[i]->selected = true;
             _w->robots[i]->select_x = s->contactPos[0];
@@ -267,7 +267,6 @@ SSLWorld::SSLWorld(QGLWidget* parent, ConfigWidget* _cfg, RobotsFormation *form1
     for (int k=0;k<cfg->Robots_Count() * 2;k++)
     {
         p->createSurface(ray,robots[k]->chassis)->callback = rayCallback;
-        p->createSurface(ray,robots[k]->dummy)->callback = rayCallback;
     }
     PSurface ballwithwall;
     ballwithwall.surface.mode = dContactBounce | dContactApprox1;// | dContactSlip1;
@@ -277,7 +276,7 @@ SSLWorld::SSLWorld(QGLWidget* parent, ConfigWidget* _cfg, RobotsFormation *form1
     ballwithwall.surface.slip1 = 0;//cfg->ballslip();
 
     PSurface wheelswithground;
-    PSurface* ball_ground = p->createSurface(ball,ground);
+    PSurface* ball_ground = p->createOneWaySurface(ball,ground);
     ball_ground->surface = ballwithwall.surface;
     // ball_ground->callback = ballCallBack;
 
@@ -286,23 +285,21 @@ SSLWorld::SSLWorld(QGLWidget* parent, ConfigWidget* _cfg, RobotsFormation *form1
     ballwithkicker.surface.mu = fric(cfg->robotSettings.Kicker_Friction);
     ballwithkicker.surface.slip1 = 5;
     
-    for (auto & wall : walls) p->createSurface(ball, wall)->surface = ballwithwall.surface;
+    for (auto & wall : walls) p->createOneWaySurface(ball, wall)->surface = ballwithwall.surface;
     
     for (int k = 0; k < 2 * cfg->Robots_Count(); k++)
     {
-        p->createSurface(robots[k]->chassis,ground);
-        for (auto & wall : walls) p->createSurface(robots[k]->chassis,wall);
+        for (auto & wall : walls) p->createOneWaySurface(robots[k]->chassis,wall);
 
         // Create surface between ball and chassis
-        PSurface* ballChassis = p->createSurfaceBallChassis(robots[k]->chassis, ball);
+        PSurface* ballChassis = p->createOneWaySurface(ball, robots[k]->chassis);
         ballChassis->callback=ballCallBack;
 
 
         p->createSurface(robots[k]->kicker->box,ball)->surface = ballwithkicker.surface;
         for (auto & wheel : robots[k]->wheels)
         {
-            p->createSurface(wheel->cyl,ball);
-            PSurface* w_g = p->createSurface(wheel->cyl,ground);
+            PSurface* w_g = p->createOneWaySurface(wheel->cyl,ground);
             w_g->surface=wheelswithground.surface;
             w_g->usefdir1=true;
             w_g->callback=wheelCallBack;
@@ -311,8 +308,7 @@ SSLWorld::SSLWorld(QGLWidget* parent, ConfigWidget* _cfg, RobotsFormation *form1
         {            
             if (k != j)
             {
-                p->createSurface(robots[k]->dummy,robots[j]->dummy); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
-                p->createSurface(robots[k]->chassis,robots[j]->kicker->box);
+                p->createSurface(robots[k]->chassis,robots[j]->chassis); //seams ode doesn't understand cylinder-cylinder contacts, so I used spheres
             }
         }
     }

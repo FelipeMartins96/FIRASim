@@ -223,14 +223,6 @@ Robot::Robot(PWorld* world,PBall *ball,ConfigWidget* _cfg,dReal x,dReal y,dReal 
     chassis->space = space;
     w->addObject(chassis);
 
-    dummy   = new PBall(x,y,z,cfg->robotSettings.RobotCenterFromKicker,cfg->robotSettings.BodyMass*0.01f,0,0,0);
-    dummy->setVisibility(false);
-    dummy->space = space;
-    w->addObject(dummy);
-
-    dummy_to_chassis = dJointCreateFixed(world->world,0);
-    dJointAttach (dummy_to_chassis,chassis->body,dummy->body);
-
     kicker = new Kicker(this);
 
     wheels[0] = new Wheel(this,0,cfg->robotSettings.Wheel1Angle,cfg->robotSettings.Wheel1Angle,wheeltexid);
@@ -354,8 +346,6 @@ void Robot::resetRobot()
     resetSpeeds();
     dBodySetLinearVel(chassis->body,0,0,0);
     dBodySetAngularVel(chassis->body,0,0,0);
-    dBodySetLinearVel(dummy->body,0,0,0);
-    dBodySetAngularVel(dummy->body,0,0,0);
     dBodySetLinearVel(kicker->box->body,0,0,0);
     dBodySetAngularVel(kicker->box->body,0,0,0);
     for (int i=0;i<4;i++)
@@ -403,7 +393,6 @@ void Robot::setXY(dReal x,dReal y)
     dReal height = ROBOT_START_Z(cfg);
     chassis->getBodyPosition(xx,yy,zz);
     chassis->setBodyPosition(x,y,height);
-    dummy->setBodyPosition(x,y,height);
     kicker->box->getBodyPosition(kx,ky,kz);
     kicker->box->setBodyPosition(kx-xx+x,ky-yy+y,kz-zz+height);
     for (int i=0;i<4;i++)
@@ -418,7 +407,6 @@ void Robot::setDir(dReal ang)
     ang*=M_PI/180.0f;
     chassis->setBodyRotation(0,0,1,ang);
     kicker->box->setBodyRotation(0,0,1,ang);
-    dummy->setBodyRotation(0,0,1,ang);
     dMatrix3 wLocalRot,wRot,cRot;
     dVector3 localPos,finalPos,cPos;
     chassis->getBodyPosition(cPos[0],cPos[1],cPos[2],false);
