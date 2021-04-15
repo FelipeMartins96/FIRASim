@@ -41,7 +41,7 @@ ConfigWidget::ConfigWidget() {
 
   VarListPtr game_vars(new VarList("Game"));
   geo_vars->addChild(game_vars);
-  ADD_ENUM(StringEnum, Division, "Division A", "Division")
+  ADD_ENUM(StringEnum, Division, "Division B", "Division")
   ADD_TO_ENUM(Division, "Division A");
   ADD_TO_ENUM(Division, "Division B");
   END_ENUM(game_vars, Division);
@@ -106,7 +106,7 @@ ConfigWidget::ConfigWidget() {
   world.push_back(phys_vars);
     VarListPtr worldp_vars(new VarList("World"));
     phys_vars->addChild(worldp_vars);  
-        ADD_VALUE(worldp_vars,Double,DesiredFPS,60,"Desired FPS")
+        ADD_VALUE(worldp_vars,Double,DesiredFPS,2000,"Desired FPS")
         ADD_VALUE(worldp_vars,Bool,SyncWithGL,false,"Synchronize ODE with OpenGL")
         ADD_VALUE(worldp_vars,Double,DeltaTime,1.0/60,"ODE time step")
         ADD_VALUE(worldp_vars,Double,Gravity,9.81,"Gravity")
@@ -131,7 +131,7 @@ ConfigWidget::ConfigWidget() {
     ADD_VALUE(ball_model_vars,Double,BallModelChipFixedLossDampingZ,0.42,"Chip-fixed-loss damping in z-direction")
   VarListPtr comm_vars(new VarList("Communication"));
   world.push_back(comm_vars);
-    ADD_VALUE(comm_vars,String,VisionMulticastAddr,"224.5.23.2","Vision multicast address")  //SSL Vision: "224.5.23.2"
+    ADD_VALUE(comm_vars,String,VisionMulticastAddr,"224.0.0.1","Vision multicast address")  //SSL Vision: "224.5.23.2"
     ADD_VALUE(comm_vars,Int,VisionMulticastPort,10020,"Vision multicast port")
     ADD_VALUE(comm_vars,Int,CommandListenPort,20011,"Command listen port")
     ADD_VALUE(comm_vars,Int,BlueStatusSendPort,30011,"Blue Team status send port")

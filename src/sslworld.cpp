@@ -979,87 +979,35 @@ SSL_WrapperPacket* SSLWorld::generatePacket(int cam_id) {
 
     const double CAMERA_HEIGHT = cfg->Camera_Height();
 
-    // send the geometry for every camera consecutively to provide the camera setup for all of them
-    if (((sendGeomCount++) / 4) % (cfg->sendGeometryEvery() / 4) == 0)
-    {
-        SSL_GeometryData* geom = pPacket->mutable_geometry();
-        SSL_GeometryFieldSize* field = geom->mutable_field();
-
-        auto models = geom->mutable_models();
-        auto straight_two_phase = models->mutable_straight_two_phase();
-        straight_two_phase->set_acc_slide(cfg->BallModelTwoPhaseAccSlide());
-        straight_two_phase->set_acc_roll(cfg->BallModelTwoPhaseAccRoll());
-        straight_two_phase->set_k_switch(cfg->BallModelTwoPhaseKSwitch());
-        auto chip_fixed_loss = models->mutable_chip_fixed_loss();
-        chip_fixed_loss->set_damping_xy_first_hop(cfg->BallModelChipFixedLossDampingXyFirstHop());
-        chip_fixed_loss->set_damping_xy_other_hops(cfg->BallModelChipFixedLossDampingXyOtherHops());
-        chip_fixed_loss->set_damping_z(cfg->BallModelChipFixedLossDampingZ());
-
-        // Field general info
-        field->set_field_length(CONVUNIT(cfg->Field_Length()));
-        field->set_field_width(CONVUNIT(cfg->Field_Width()));
-        field->set_boundary_width(CONVUNIT(cfg->Field_Margin()));
-        field->set_goal_width(CONVUNIT(cfg->Goal_Width()));
-        field->set_goal_depth(CONVUNIT(cfg->Goal_Depth()));
-
-        // Field lines and arcs
-        addFieldLinesArcs(field);
-
-        // camera calibration
-        const double FOCAL_LENGTH = cfg->Camera_Focal_Length();
-
-        SSL_GeometryCameraCalibration* camera = geom->add_calib();
-        camera->set_camera_id(cam_id);
-        // dummy values
-        camera->set_distortion(0.2);
-        camera->set_focal_length((float)FOCAL_LENGTH);
-        camera->set_principal_point_x(300);
-        camera->set_principal_point_y(300);
-        camera->set_q0(0.7);
-        camera->set_q1(0.7);
-        camera->set_q2(0.7);
-        camera->set_q3(0.7);
-        camera->set_tx(0);
-        camera->set_ty(0);
-        camera->set_tz(3500);
-
-        auto camera_pos = cameraPosition(cam_id);
-        camera->set_derived_camera_world_tx(CONVUNIT(camera_pos.first));
-        camera->set_derived_camera_world_ty(CONVUNIT(camera_pos.second));
-        camera->set_derived_camera_world_tz(CONVUNIT(CAMERA_HEIGHT));
-
-    }
     if (!cfg->noise()) { dev_x = 0;dev_y = 0;dev_a = 0;}
     if (!cfg->vanishing() || (rand0_1() > cfg->ball_vanishing())) {
-        if (visibleInCam(cam_id, x, y)) {
-            const double BALL_RADIUS = cfg->BallRadius() * 1000.f;
-            const double SCALING_LIMIT = cfg->Camera_Scaling_Limit();
-            SSL_DetectionBall* vball = pPacket->mutable_detection()->add_balls();
+        const double BALL_RADIUS = cfg->BallRadius() * 1000.f;
+        const double SCALING_LIMIT = cfg->Camera_Scaling_Limit();
+        SSL_DetectionBall* vball = pPacket->mutable_detection()->add_balls();
 
-            float output_x = randn_notrig(x*1000.0f,dev_x);
-            float output_y = randn_notrig(y*1000.0f,dev_x);
-            float output_z = z*1000.0f;
+        float output_x = randn_notrig(x*1000.0f,dev_x);
+        float output_y = randn_notrig(y*1000.0f,dev_x);
+        float output_z = z*1000.0f;
 
-            const bool project_airborne = cfg->BallProjectAirborne();
-            if (project_airborne) {
-                output_z = qBound(0.0, output_z - BALL_RADIUS, CONVUNIT(CAMERA_HEIGHT) * SCALING_LIMIT);
-                auto camera_pos = cameraPosition(cam_id);
-                const float camera_x = CONVUNIT(camera_pos.first);
-                const float camera_y = CONVUNIT(camera_pos.second);
-                const float camera_z = CONVUNIT(CAMERA_HEIGHT);
-                output_x = (output_x - camera_x) * (camera_z / (camera_z - output_z)) + camera_x;
-                output_y = (output_y - camera_y) * (camera_z / (camera_z - output_z)) + camera_y;
-            }
-
-            vball->set_x(output_x);
-            vball->set_y(output_y);
-            if (!project_airborne) {
-                vball->set_z(output_z);
-            }
-            vball->set_pixel_x(x*1000.0f);
-            vball->set_pixel_y(y*1000.0f);
-            vball->set_confidence(0.9 + rand0_1()*0.1);
+        const bool project_airborne = cfg->BallProjectAirborne();
+        if (project_airborne) {
+            output_z = qBound(0.0, output_z - BALL_RADIUS, CONVUNIT(CAMERA_HEIGHT) * SCALING_LIMIT);
+            auto camera_pos = cameraPosition(cam_id);
+            const float camera_x = CONVUNIT(camera_pos.first);
+            const float camera_y = CONVUNIT(camera_pos.second);
+            const float camera_z = CONVUNIT(CAMERA_HEIGHT);
+            output_x = (output_x - camera_x) * (camera_z / (camera_z - output_z)) + camera_x;
+            output_y = (output_y - camera_y) * (camera_z / (camera_z - output_z)) + camera_y;
         }
+
+        vball->set_x(output_x);
+        vball->set_y(output_y);
+        if (!project_airborne) {
+            vball->set_z(output_z);
+        }
+        vball->set_pixel_x(x*1000.0f);
+        vball->set_pixel_y(y*1000.0f);
+        vball->set_confidence(0.9 + rand0_1()*0.1);
     }
 
     for(int i = 0; i < cfg->Robots_Count() * 2; i++) {
@@ -1075,17 +1023,15 @@ SSL_WrapperPacket* SSLWorld::generatePacket(int cam_id) {
             // reset when the robot has turned over
             if (cfg->ResetTurnOver() && k < 0.9) robots[i]->resetRobot();
 
-            if (visibleInCam(cam_id, x, y)) {
-                SSL_DetectionRobot* rob = (is_blue) ? pPacket->mutable_detection()->add_robots_blue()
-                                                    : pPacket->mutable_detection()->add_robots_yellow();
-                rob->set_robot_id(id);
-                rob->set_pixel_x(x*1000.0f);
-                rob->set_pixel_y(y*1000.0f);
-                rob->set_confidence(1);
-                rob->set_x(randn_notrig(x*1000.0f,dev_x));
-                rob->set_y(randn_notrig(y*1000.0f,dev_y));
-                rob->set_orientation(normalizeAngle(randn_notrig(dir,dev_a))*M_PI/180.0f);
-            }
+            SSL_DetectionRobot* rob = (is_blue) ? pPacket->mutable_detection()->add_robots_blue()
+                                                : pPacket->mutable_detection()->add_robots_yellow();
+            rob->set_robot_id(id);
+            rob->set_pixel_x(x*1000.0f);
+            rob->set_pixel_y(y*1000.0f);
+            rob->set_confidence(1);
+            rob->set_x(randn_notrig(x*1000.0f,dev_x));
+            rob->set_y(randn_notrig(y*1000.0f,dev_y));
+            rob->set_orientation(normalizeAngle(randn_notrig(dir,dev_a))*M_PI/180.0f);
         }
     }
     return pPacket;
@@ -1165,9 +1111,6 @@ SendingPacket::SendingPacket(SSL_WrapperPacket* _packet,int _t) {
 void SSLWorld::sendVisionBuffer() {
     int t = (int)(sim_time*1000);
     sendQueue.push_back(new SendingPacket(generatePacket(0),t));
-    sendQueue.push_back(new SendingPacket(generatePacket(1),t));
-    sendQueue.push_back(new SendingPacket(generatePacket(2),t));
-    sendQueue.push_back(new SendingPacket(generatePacket(3),t));
     while (t - sendQueue.front()->t>=cfg->sendDelay())
     {
         SSL_WrapperPacket *pPacket = sendQueue.front()->packet;
