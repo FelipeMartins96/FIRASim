@@ -667,6 +667,7 @@ void SSLWorld::recvActions() {
             if (updateRobotStatus) sendRobotStatus(robotsPacket, datagram.senderAddress(), team);
         }
     }
+    emit receivedPacket();
 }
 
 void SSLWorld::simControlSocketReady() {

@@ -45,7 +45,7 @@ ConfigWidget::ConfigWidget() {
   ADD_TO_ENUM(Division, "Division A");
   ADD_TO_ENUM(Division, "Division B");
   END_ENUM(game_vars, Division);
-  ADD_VALUE(game_vars,Int, Robots_Count, 11, "Robots Count")
+  ADD_VALUE(game_vars,Int, Robots_Count, 1, "Robots Count")
   ADD_VALUE(game_vars, String, ColorRobotBlue, "#0000ff", "Color Robot Blue")
   ADD_VALUE(game_vars, String, ColorRobotYellow, "#ffff00", "Color Robot Yellow")
 

@@ -122,6 +122,7 @@ public slots:
     void yellowControlSocketReady();
 signals:
     void fpsChanged(int newFPS);
+    void receivedPacket();
 };
 
 

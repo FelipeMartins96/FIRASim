@@ -192,7 +192,8 @@ MainWindow::MainWindow(QWidget *parent)
     timer->setInterval(0);
 
 
-    QObject::connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+    // QObject::connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+    QObject::connect(glwidget->ssl, SIGNAL(receivedPacket()), this, SLOT(update()));
     QObject::connect(takeSnapshotAct, SIGNAL(triggered(bool)), this, SLOT(takeSnapshot()));
     QObject::connect(takeSnapshotToClipboardAct, SIGNAL(triggered(bool)), this, SLOT(takeSnapshotToClipboard()));
     QObject::connect(exit, SIGNAL(triggered(bool)), this, SLOT(close()));
