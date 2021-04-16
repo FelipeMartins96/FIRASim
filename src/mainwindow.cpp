@@ -189,7 +189,7 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(glwidget);
 
     timer = new QTimer(this);
-    timer->setInterval(getInterval());
+    timer->setInterval(0);
 
 
     QObject::connect(timer, SIGNAL(timeout()), this, SLOT(update()));
@@ -420,12 +420,10 @@ void MainWindow::updateRobotLabel()
     robotwidget->changeRobotOnOff(robotwidget->id,glwidget->ssl->robots[robotwidget->id]->on);
 }
 
-
 void MainWindow::changeBallMass()
 {
     glwidget->ssl->ball->setMass(configwidget->BallMass());
 }
-
 
 void MainWindow::changeBallGroundSurface()
 {
@@ -529,8 +527,6 @@ void MainWindow::showAbout()
     QString text = QString("grSim - RoboCup Small Size Soccer Robots Simulator\n\n(C) 2011 - Parsian Robotic Center\nhttp://eew.aut.ac.ir/~parsian/grsim\n\ngrSim is free software released under the terms of GNU GPL v3");
     QMessageBox::about(this, title, text);
 }
-
-
 
 void MainWindow::reconnectBlueStatusSocket()
 {

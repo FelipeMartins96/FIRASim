@@ -348,7 +348,7 @@ void GLWidget::step()
     ballSpeed  = sqrt(ballSpeed);
     rendertimer.restart();
     m_fps = frames /(time.elapsed()/1000.0);
-    qDebug() << QString("new FPS set by user: %1").arg(QString::asprintf("%06.2f",m_fps));
+    // qDebug() << QString("new FPS set by user: %1").arg(QString::asprintf("%06.2f",m_fps));
 
     if (!(frames % ((int)(ceil(cfg->DesiredFPS()))))) {
         time.restart();
